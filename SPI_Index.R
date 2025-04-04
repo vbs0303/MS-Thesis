@@ -56,11 +56,13 @@ crop_season_spi <- crop_season_spi %>%
 print(crop_season_spi)
 
 # Save the classified data to a new CSV file
-write.csv(crop_season_spi, "SPI_Classification_Growing_Season_from_1993-2024.csv", row.names = FALSE)
+write.csv(crop_season_spi, "SPI_Classification_Growing_Season_from_1993-2024_season.csv", row.names = FALSE)
 
 # Summary of the classifications
 cat("\nSummary of SPI Classifications (Crop Growing Season):\n")
 print(table(crop_season_spi$Classification))
+
+
 
 # Plotting the classified SPI data using ggplot2 (to match reference theme)
 ggplot(crop_season_spi, aes(x = as.factor(SeasonYear), y = SPI, fill = Classification)) +
@@ -83,6 +85,10 @@ ggplot(crop_season_spi, aes(x = as.factor(SeasonYear), y = SPI, fill = Classific
   geom_text(aes(label = round(Total_PRCP), y = ifelse(SPI < 0, SPI - 0.2, SPI + 0.2)), size = 3) + # Round to complete number
   scale_y_continuous(breaks = scales::pretty_breaks(), minor_breaks = seq(floor(min(crop_season_spi$SPI) * 10) / 10, ceiling(max(crop_season_spi$SPI) * 10) / 10, by = 0.1)) + # Manual minor breaks
   scale_x_discrete(breaks = crop_season_spi$SeasonYear[seq(1, length(crop_season_spi$SeasonYear), by = 1)]) # Major x-axis tick
+
+# Save the plot as a JPEG image
+ggsave("SPI_Classification_Growing_Season_from_1993-2024_season.jpg", width = 10, height = 6, dpi = 300)
+
 
 
 # By performing the Gamma Fiting
