@@ -153,4 +153,3 @@ barplot(
   ylab = "Frequency"
 )
 
-
