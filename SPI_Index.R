@@ -3,6 +3,7 @@
 # Load necessary libraries
 library(dplyr)
 library(lubridate)
+library(ggplot2)
 
 # Load the SPI data
 spi_data <- read.csv("SPI_Index.csv")
@@ -19,16 +20,18 @@ if (all(is.na(spi_data$DATE))) {
 spi_data$Year <- year(spi_data$DATE)
 spi_data$Month <- month(spi_data$DATE)
 
-# Check the structure and first few rows of the data
-str(spi_data)
-head(spi_data)
+# Filter out data from Oct-Dec 2024 *before* creating SeasonYear
+spi_data <- spi_data %>%
+  filter(!(Year == 2024 & Month %in% c(10, 11, 12)))
 
 # Filter the data for the crop growing season (October to May)
 crop_season_spi <- spi_data %>%
   filter(Month %in% c(10, 11, 12, 1, 2, 3, 4, 5)) %>%
   mutate(SeasonYear = ifelse(Month %in% c(10, 11, 12), Year + 1, Year)) %>%
+  filter(SeasonYear <= 2024) %>% # Include 2024, which represents 2023-2024
   group_by(SeasonYear) %>%
   summarize(
+    Total_PRCP = sum(PRCP, na.rm = TRUE), # Calculate total precipitation
     Mean_PRCP = mean(PRCP, na.rm = TRUE),
     SD_PRCP = sd(PRCP, na.rm = TRUE)
   )
@@ -59,16 +62,27 @@ write.csv(crop_season_spi, "SPI_Classification_Growing_Season_from_1993-2024.csv
 cat("\nSummary of SPI Classifications (Crop Growing Season):\n")
 print(table(crop_season_spi$Classification))
 
-# Plotting the classified SPI data
-barplot(
-  table(crop_season_spi$Classification),
-  main = "SPI Classification for Crop Growing Season (1993-2024)",
-  col = "lightblue",
-  xlab = "Classification",
-  ylab = "Frequency"
-)
-
-
+# Plotting the classified SPI data using ggplot2 (to match reference theme)
+ggplot(crop_season_spi, aes(x = as.factor(SeasonYear), y = SPI, fill = Classification)) +
+  geom_bar(stat = "identity") +
+  scale_fill_manual(values = c("Drought" = "red", "Normal" = "gray", "Wet" = "blue")) +
+  geom_hline(yintercept = 1.0, linetype = "dashed", color = "green") +
+  geom_hline(yintercept = -1.0, linetype = "dashed", color = "green") +
+  geom_hline(yintercept = 0, color = "black") + # Black line at y=0
+  labs(title = "Specialised Precipitation Index",
+       x = "Water years",
+       y = "SPI") +
+  theme_classic() +  # Use classic theme
+  theme(axis.line = element_line(color = "black"),  # Black axis lines
+        axis.ticks = element_line(color = "black"), # Black tick marks
+        axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5),
+        axis.ticks.y.minor = element_line(color = "black", linewidth = 0.2), # Minor ticks on y-axis
+        panel.grid.major = element_blank(), # Remove major gridlines
+        panel.grid.minor = element_blank(),
+        plot.title = element_text(hjust = 0.5)) + # Center the title
+  geom_text(aes(label = round(Total_PRCP), y = ifelse(SPI < 0, SPI - 0.2, SPI + 0.2)), size = 3) + # Round to complete number
+  scale_y_continuous(breaks = scales::pretty_breaks(), minor_breaks = seq(floor(min(crop_season_spi$SPI) * 10) / 10, ceiling(max(crop_season_spi$SPI) * 10) / 10, by = 0.1)) + # Manual minor breaks
+  scale_x_discrete(breaks = crop_season_spi$SeasonYear[seq(1, length(crop_season_spi$SeasonYear), by = 1)]) # Major x-axis ticks
 
 
 # By performing the Gamma Fiting
