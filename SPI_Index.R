@@ -82,7 +82,7 @@ ggplot(crop_season_spi, aes(x = as.factor(SeasonYear), y = SPI, fill = Classific
         plot.title = element_text(hjust = 0.5)) + # Center the title
   geom_text(aes(label = round(Total_PRCP), y = ifelse(SPI < 0, SPI - 0.2, SPI + 0.2)), size = 3) + # Round to complete number
   scale_y_continuous(breaks = scales::pretty_breaks(), minor_breaks = seq(floor(min(crop_season_spi$SPI) * 10) / 10, ceiling(max(crop_season_spi$SPI) * 10) / 10, by = 0.1)) + # Manual minor breaks
-  scale_x_discrete(breaks = crop_season_spi$SeasonYear[seq(1, length(crop_season_spi$SeasonYear), by = 1)]) # Major x-axis ticks
+  scale_x_discrete(breaks = crop_season_spi$SeasonYear[seq(1, length(crop_season_spi$SeasonYear), by = 1)]) # Major x-axis tick
 
 
 # By performing the Gamma Fiting
