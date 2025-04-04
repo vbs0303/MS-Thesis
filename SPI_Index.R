@@ -23,7 +23,7 @@ spi_data$Month <- month(spi_data$DATE)
 str(spi_data)
 head(spi_data)
 
-# Filter the data for the crop growing season (October to April)
+# Filter the data for the crop growing season (October to May)
 crop_season_spi <- spi_data %>%
   filter(Month %in% c(10, 11, 12, 1, 2, 3, 4, 5)) %>%
   mutate(SeasonYear = ifelse(Month %in% c(10, 11, 12), Year + 1, Year)) %>%
